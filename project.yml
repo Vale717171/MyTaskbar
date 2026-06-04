@@ -1,0 +1,37 @@
+name: MyTaskbar
+options:
+  bundleIdPrefix: com.valentinomytaskbar
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+  indentWidth: 4
+  tabWidth: 4
+targets:
+  MyTaskbar:
+    type: application
+    platform: macOS
+    sources:
+      - path: MyTaskbar
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.valentinomytaskbar.MyTaskbar
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
+        INFOPLIST_KEY_NSPrincipalClass: NSApplication
+        INFOPLIST_KEY_NSMainStoryboardFile: ""
+        INFOPLIST_KEY_UILaunchStoryboardName: ""
+        SWIFT_VERSION: 5.0
+        MACOSX_DEPLOYMENT_TARGET: 14.0
+    dependencies: []
+    info:
+      path: MyTaskbar/Info.plist
+      properties:
+        CFBundleName: MyTaskbar
+        CFBundleDisplayName: MyTaskbar
+        CFBundleIdentifier: com.valentinomytaskbar.MyTaskbar
+        CFBundleVersion: "1.0"
+        CFBundleShortVersionString: "1.0"
+        NSPrincipalClass: NSApplication
+        NSMainStoryboardFile: ""
+        UILaunchStoryboardName: ""
+        LSMinimumSystemVersion: "14.0"
