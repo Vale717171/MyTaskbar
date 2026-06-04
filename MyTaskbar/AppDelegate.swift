@@ -19,7 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func createTaskbarWindow() {
         guard let screen = NSScreen.main else { return }
-        let screenRect = screen.visibleFrame
+        let screenRect = screen.frame
         let height: CGFloat = 52
 
         let window = NSWindow(
