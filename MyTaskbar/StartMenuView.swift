@@ -1,92 +1,201 @@
 import SwiftUI
 
 struct StartMenuView: View {
+    @ObservedObject var viewModel: TaskbarViewModel
     @State private var searchText = ""
-    @State private var applications: [AppInfo] = []
-    
-    let onAppSelected: (URL) -> Void
-    
-    var filteredApps: [AppInfo] {
-        if searchText.isEmpty {
-            return applications
+
+    private var filteredApps: [AppInfo] {
+        if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return viewModel.installedApplications
         }
-        return applications.filter {
+
+        return viewModel.installedApplications.filter {
             $0.name.localizedCaseInsensitiveContains(searchText)
         }
     }
-    
+
+    private var pinnedApps: [AppInfo] {
+        viewModel.pinnedApplicationIDs.compactMap { id in
+            viewModel.installedApplications.first(where: { $0.id == id })
+        }
+    }
+
     var body: some View {
-        VStack(spacing: 0) {
-            TextField("Cerca applicazioni...", text: $searchText)
-                .textFieldStyle(.roundedBorder)
-                .padding()
-            
-            Divider()
-            
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 4) {
-                    ForEach(filteredApps) { app in
-                        Button(action: {
-                            onAppSelected(app.url)
-                        }) {
-                            HStack {
-                                if let icon = app.icon {
-                                    Image(nsImage: icon)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 32, height: 32)
-                                }
-                                Text(app.name)
-                                    .foregroundColor(.white)
-                                Spacer()
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                    }
+        ZStack {
+            VisualEffectView(material: .hudWindow, blendingMode: .behindWindow, state: .active)
+
+            VStack(alignment: .leading, spacing: 16) {
+                header
+                searchField
+
+                if !pinnedApps.isEmpty && searchText.isEmpty {
+                    pinnedSection
+                }
+
+                allAppsSection
+            }
+            .padding(18)
+        }
+        .frame(width: 520, height: 620)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Color.white.opacity(0.16), lineWidth: 1)
+        )
+    }
+
+    private var header: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 3) {
+                Text("MyTaskbar")
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                Text("Menu Start sperimentale per macOS")
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundColor(.white.opacity(0.65))
+            }
+
+            Spacer()
+
+            ClockView()
+        }
+    }
+
+    private var searchField: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(.white.opacity(0.65))
+            TextField("Cerca applicazioni", text: $searchText)
+                .textFieldStyle(.plain)
+                .foregroundColor(.white)
+        }
+        .padding(.horizontal, 12)
+        .frame(height: 38)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Color.white.opacity(0.12))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .stroke(Color.white.opacity(0.14), lineWidth: 1)
+        )
+    }
+
+    private var pinnedSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Aggiunte alla taskbar")
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundColor(.white.opacity(0.75))
+
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 5), spacing: 8) {
+                ForEach(pinnedApps) { app in
+                    StartPinnedAppButton(app: app, viewModel: viewModel)
                 }
             }
         }
-        .frame(width: 420, height: 520)
-        .onAppear {
-            loadApplications()
-        }
     }
-    
-    private func loadApplications() {
-        let fileManager = FileManager.default
-        var apps: [AppInfo] = []
-        
-        // /Applications
-        if let urls = try? fileManager.contentsOfDirectory(at: URL(fileURLWithPath: "/Applications"), includingPropertiesForKeys: nil) {
-            for url in urls where url.pathExtension == "app" {
-                apps.append(AppInfo(url: url))
+
+    private var allAppsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text(searchText.isEmpty ? "Tutte le app" : "Risultati")
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundColor(.white.opacity(0.75))
+                Spacer()
+                Text("\(filteredApps.count)")
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundColor(.white.opacity(0.45))
+            }
+
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 4) {
+                    ForEach(filteredApps) { app in
+                        StartMenuRow(app: app, viewModel: viewModel)
+                    }
+                }
+                .padding(.vertical, 2)
             }
         }
-        
-        // ~/Applications
-        let homeAppsURL = fileManager.homeDirectoryForCurrentUser.appendingPathComponent("Applications")
-        if let urls = try? fileManager.contentsOfDirectory(at: homeAppsURL, includingPropertiesForKeys: nil) {
-            for url in urls where url.pathExtension == "app" {
-                apps.append(AppInfo(url: url))
-            }
-        }
-        
-        self.applications = apps.sorted { $0.name < $1.name }
     }
 }
 
-struct AppInfo: Identifiable {
-    let id = UUID()
-    let name: String
-    let url: URL
-    let icon: NSImage?
-    
-    init(url: URL) {
-        self.url = url
-        self.name = url.deletingPathExtension().lastPathComponent
-        self.icon = NSWorkspace.shared.icon(forFile: url.path)
+private struct StartPinnedAppButton: View {
+    let app: AppInfo
+    let viewModel: TaskbarViewModel
+
+    var body: some View {
+        Button(action: { viewModel.openApplication(at: app.url) }) {
+            VStack(spacing: 8) {
+                if let icon = app.icon {
+                    Image(nsImage: icon)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 34, height: 34)
+                }
+
+                Text(app.name)
+                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 76)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.white.opacity(0.08))
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct StartMenuRow: View {
+    let app: AppInfo
+    let viewModel: TaskbarViewModel
+
+    var body: some View {
+        Button(action: { viewModel.openApplication(at: app.url) }) {
+            HStack(spacing: 12) {
+                if let icon = app.icon {
+                    Image(nsImage: icon)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 30, height: 30)
+                }
+
+                Text(app.name)
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundColor(.white)
+
+                Spacer()
+
+                if viewModel.isPinned(app) {
+                    Image(systemName: "pin.fill")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.55))
+                }
+            }
+            .padding(.horizontal, 10)
+            .frame(height: 40)
+            .background(
+                RoundedRectangle(cornerRadius: 9, style: .continuous)
+                    .fill(Color.white.opacity(0.06))
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .contextMenu {
+            if viewModel.isPinned(app) {
+                Button("Rimuovi dalla taskbar") {
+                    if let item = viewModel.taskbarItems.first(where: { $0.id == app.id }) {
+                        viewModel.unpin(item)
+                    }
+                }
+            } else {
+                Button("Aggiungi alla taskbar") {
+                    viewModel.pin(app)
+                }
+            }
+        }
     }
 }
