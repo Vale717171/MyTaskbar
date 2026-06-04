@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 struct StartMenuView: View {
     @ObservedObject var viewModel: TaskbarViewModel
@@ -23,6 +24,14 @@ struct StartMenuView: View {
     var body: some View {
         ZStack {
             VisualEffectView(material: .hudWindow, blendingMode: .behindWindow, state: .active)
+            LinearGradient(
+                colors: [
+                    Color(red: 0.08, green: 0.10, blue: 0.13).opacity(0.94),
+                    Color(red: 0.02, green: 0.03, blue: 0.05).opacity(0.92)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
 
             VStack(alignment: .leading, spacing: 16) {
                 header
@@ -40,7 +49,7 @@ struct StartMenuView: View {
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(Color.white.opacity(0.16), lineWidth: 1)
+                .stroke(Color.white.opacity(0.22), lineWidth: 1)
         )
     }
 
@@ -57,6 +66,23 @@ struct StartMenuView: View {
 
             Spacer()
 
+            Button(action: { NSApp.terminate(nil) }) {
+                Image(systemName: "power")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.white.opacity(0.88))
+                    .frame(width: 30, height: 30)
+                    .background(
+                        Circle()
+                            .fill(Color.white.opacity(0.12))
+                    )
+                    .overlay(
+                        Circle()
+                            .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                    )
+            }
+            .buttonStyle(.plain)
+            .help("Chiudi MyTaskbar")
+
             ClockView()
         }
     }
@@ -68,16 +94,17 @@ struct StartMenuView: View {
             TextField("Cerca applicazioni", text: $searchText)
                 .textFieldStyle(.plain)
                 .foregroundColor(.white)
+                .tint(.white)
         }
         .padding(.horizontal, 12)
         .frame(height: 38)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color.white.opacity(0.12))
+                .fill(Color.black.opacity(0.28))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(Color.white.opacity(0.14), lineWidth: 1)
+                .stroke(Color.white.opacity(0.20), lineWidth: 1)
         )
     }
 
@@ -135,14 +162,14 @@ private struct StartPinnedAppButton: View {
 
                 Text(app.name)
                     .font(.system(size: 11, weight: .medium, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(.white.opacity(0.95))
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity)
             .frame(height: 76)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color.white.opacity(0.08))
+                    .fill(Color.white.opacity(0.12))
             )
         }
         .buttonStyle(.plain)
@@ -165,7 +192,7 @@ private struct StartMenuRow: View {
 
                 Text(app.name)
                     .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(.white.opacity(0.95))
 
                 Spacer()
 
@@ -179,7 +206,7 @@ private struct StartMenuRow: View {
             .frame(height: 40)
             .background(
                 RoundedRectangle(cornerRadius: 9, style: .continuous)
-                    .fill(Color.white.opacity(0.06))
+                    .fill(Color.white.opacity(0.10))
             )
             .contentShape(Rectangle())
         }
