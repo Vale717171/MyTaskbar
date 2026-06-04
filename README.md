@@ -2,60 +2,70 @@
 
 **Taskbar personalizzata per macOS** costruita con SwiftUI + AppKit.
 
+L'obiettivo è sperimentare una barra in stile Windows per macOS: Start menu, app aperte, app fissate, blur, orologio e comportamento always-on-top.
+
 ### Requisiti
 - macOS 14.0 Sonoma o superiore
 - Xcode 16 o superiore
+- XcodeGen
 
-### Come compilare (metodo consigliato)
+### Come compilare
 
-1. Clona la repository:
-   ```bash
-   git clone https://github.com/Vale717171/MyTaskbar.git
-   cd MyTaskbar
-   ```
+```bash
+git clone https://github.com/Vale717171/MyTaskbar.git
+cd MyTaskbar
+brew install xcodegen   # se non lo hai già
+xcodegen generate
+xcodebuild -project MyTaskbar.xcodeproj -scheme MyTaskbar -configuration Debug build
+open MyTaskbar.xcodeproj
+```
 
-2. Installa XcodeGen (una sola volta):
-   ```bash
-   brew install xcodegen
-   ```
+Poi premi `Cmd + R` da Xcode.
 
-3. Genera il progetto Xcode (questo crea `MyTaskbar.xcodeproj`):
-   ```bash
-   xcodegen generate
-   ```
-
-4. Apri il progetto:
-   ```bash
-   open MyTaskbar.xcodeproj
-   ```
-
-5. Compila e avvia (`Cmd + R`)
-
-> **Nota importante**: Il file `MyTaskbar.xcodeproj` **non è versionato** nella repository.
-> Viene generato automaticamente da `project.yml` tramite XcodeGen.
-> Non committare mai `MyTaskbar.xcodeproj`.
+> `MyTaskbar.xcodeproj` non è versionato. Viene generato da `project.yml` tramite XcodeGen.
 
 ### Struttura della repository
+
 ```
 MyTaskbar/
-├── project.yml              # Sorgente di verità per XcodeGen
-├── MyTaskbar/               # Codice sorgente dell'app
-│   ├── MyTaskbarApp.swift
-│   ├── AppDelegate.swift
-│   ├── TaskbarView.swift
-│   ├── TaskbarViewModel.swift
-│   ├── StartMenuView.swift
-│   └── Info.plist
+├── project.yml
 ├── README.md
-└── .gitignore
+├── .gitignore
+└── MyTaskbar/
+    ├── MyTaskbarApp.swift
+    ├── AppDelegate.swift
+    ├── TaskbarView.swift
+    ├── TaskbarViewModel.swift
+    ├── StartMenuView.swift
+    ├── AppInfo.swift
+    ├── VisualEffectView.swift
+    ├── ClockView.swift
+    └── Info.plist
 ```
 
-### Funzionalità MVP
-- Finestra borderless sempre visibile in basso
-- Elenco delle app in esecuzione (aggiornato automaticamente)
-- Click sull'icona → porta l'app in primo piano
-- Pulsante "Start" con pannello di ricerca e lancio app
+### Funzionalità attuali
+
+- Finestra borderless in basso, always-on-top.
+- Presenza su tutti gli Spaces tramite `collectionBehavior`.
+- UI scura con blur/trasparenza.
+- Pulsante Start.
+- Start menu con ricerca app.
+- Elenco app installate da `/Applications` e `~/Applications`.
+- App aperte mostrate in taskbar.
+- App fissate in stile Windows.
+- Menu contestuale per aggiungere/rimuovere app dalla taskbar.
+- Indicatore sotto le app aperte e app attiva.
+- Orologio e data sul lato destro.
 
 ### Note tecniche
-- Usa `NSWindow` + `NSHostingView` perché SwiftUI puro non permette il controllo preciso della finestra richiesto.
-- Per sviluppi futuri: supporto multi-monitor, drag & drop, miniature finestre.
+
+Questa è una base sperimentale. Alcune funzioni più avanzate richiederanno Accessibility API e permessi macOS:
+
+- miniature finestre;
+- elenco finestre per singola app;
+- chiusura/minimizzazione finestre;
+- supporto multi-monitor completo;
+- autohide robusto;
+- gestione Dock/Spaces più raffinata.
+
+Prima di aggiungere queste funzioni conviene verificare che la build base passi con `xcodebuild`.
