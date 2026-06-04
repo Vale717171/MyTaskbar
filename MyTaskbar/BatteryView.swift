@@ -50,7 +50,7 @@ struct BatteryView: View {
         guard let powerSourcesList = IOPSCopyPowerSourcesList(powerSourcesInfo)?.takeRetainedValue() as? [CFTypeRef] else { return }
         
         for powerSource in powerSourcesList {
-            guard let description = IOPSGetPowerSourceDescription(powerSourcesInfo, powerSource)?.takeRetainedValue() as? [String: Any] else { continue }
+            guard let description = IOPSGetPowerSourceDescription(powerSourcesInfo, powerSource)?.takeUnretainedValue() as? [String: Any] else { continue }
             
             // We only care about the internal battery
             if let type = description[kIOPSTypeKey] as? String, type != kIOPSInternalBatteryType {

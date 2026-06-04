@@ -22,7 +22,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
 
         window.identifier = NSUserInterfaceItemIdentifier("MyTaskbarWindow")
-        window.level = .statusWindow
+        window.level = .statusBar
         window.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary]
         window.backgroundColor = .clear
         window.isOpaque = false

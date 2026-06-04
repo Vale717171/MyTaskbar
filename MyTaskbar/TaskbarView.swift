@@ -22,7 +22,10 @@ struct TaskbarView: View {
 
             Spacer(minLength: 8)
 
-            ClockView()
+            HStack(spacing: 8) {
+                BatteryView()
+                ClockView()
+            }
         }
         .padding(.horizontal, 10)
         .frame(height: 52)
