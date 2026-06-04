@@ -59,7 +59,7 @@ final class TaskbarViewModel: ObservableObject {
 
     func bringItemToFrontOrLaunch(_ item: TaskbarItem) {
         if let app = item.runningApplication {
-            app.activate(options: .activateIgnoringOtherApps)
+            activateOrReopen(app, fallbackURL: item.applicationURL)
             return
         }
 
@@ -69,7 +69,7 @@ final class TaskbarViewModel: ObservableObject {
     }
 
     func bringAppToFront(_ app: NSRunningApplication) {
-        app.activate(options: .activateIgnoringOtherApps)
+        activateOrReopen(app, fallbackURL: app.bundleURL)
     }
 
     func openApplication(at url: URL) {
@@ -177,6 +177,34 @@ final class TaskbarViewModel: ObservableObject {
 
     private func savePinnedApplications() {
         UserDefaults.standard.set(pinnedApplicationIDs, forKey: pinnedDefaultsKey)
+    }
+
+    private func activateOrReopen(_ app: NSRunningApplication, fallbackURL: URL?) {
+        app.unhide()
+        app.activate(options: [])
+
+        if let bundleIdentifier = app.bundleIdentifier {
+            runOpen(arguments: ["-b", bundleIdentifier])
+            return
+        }
+
+        if let fallbackURL {
+            runOpen(arguments: ["-a", fallbackURL.path])
+        }
+    }
+
+    private func runOpen(arguments: [String]) {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+        process.arguments = arguments
+        process.standardOutput = Pipe()
+        process.standardError = Pipe()
+
+        do {
+            try process.run()
+        } catch {
+            print("Failed to run open \(arguments.joined(separator: " ")): \(error.localizedDescription)")
+        }
     }
 
     private func showStartMenu() {
