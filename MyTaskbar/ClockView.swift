@@ -12,7 +12,7 @@ struct ClockView: View {
                 .font(.system(size: 10, weight: .regular, design: .rounded))
                 .opacity(0.8)
         }
-        .foregroundColor(.white)
+        .foregroundColor(.black.opacity(0.82))
         .monospacedDigit()
         .frame(width: 64, alignment: .trailing)
         .onReceive(timer) { value in

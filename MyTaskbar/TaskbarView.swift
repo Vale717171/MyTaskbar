@@ -9,7 +9,7 @@ struct TaskbarView: View {
 
             Divider()
                 .frame(height: 28)
-                .overlay(Color.white.opacity(0.18))
+                .overlay(Color.black.opacity(0.14))
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 6) {
@@ -33,7 +33,7 @@ struct TaskbarView: View {
             ZStack {
                 VisualEffectView(material: .hudWindow, blendingMode: .behindWindow, state: .active)
                 LinearGradient(
-                    colors: [Color.black.opacity(0.55), Color.black.opacity(0.82)],
+                    colors: [Color(white: 0.80).opacity(0.96), Color(white: 0.73).opacity(0.94)],
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -41,7 +41,7 @@ struct TaskbarView: View {
         )
         .overlay(alignment: .top) {
             Rectangle()
-                .fill(Color.white.opacity(0.14))
+                .fill(Color.black.opacity(0.12))
                 .frame(height: 1)
         }
     }
@@ -54,16 +54,16 @@ struct TaskbarView: View {
                 Text("Start")
                     .font(.system(size: 14, weight: .semibold, design: .rounded))
             }
-            .foregroundColor(.white)
+            .foregroundColor(.black.opacity(0.84))
             .padding(.horizontal, 14)
             .frame(height: 36)
             .background(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(Color.white.opacity(0.13))
+                    .fill(Color.white.opacity(0.28))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                    .stroke(Color.black.opacity(0.10), lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -91,24 +91,24 @@ struct TaskbarItemButton: View {
                     if item.isPinned && !item.isRunning {
                         Image(systemName: "pin.fill")
                             .font(.system(size: 8, weight: .bold))
-                            .foregroundColor(.white.opacity(0.8))
+                            .foregroundColor(.black.opacity(0.65))
                             .offset(x: 5, y: -3)
                     }
                 }
 
                 Capsule()
-                    .fill(item.isFrontmost ? Color.white.opacity(0.95) : item.isRunning ? Color.white.opacity(0.45) : Color.clear)
+                    .fill(item.isFrontmost ? Color.black.opacity(0.78) : item.isRunning ? Color.black.opacity(0.32) : Color.clear)
                     .frame(width: item.isFrontmost ? 22 : 8, height: 3)
                     .animation(.easeInOut(duration: 0.15), value: item.isFrontmost)
             }
             .frame(width: 48, height: 40)
             .background(
                 RoundedRectangle(cornerRadius: 9, style: .continuous)
-                    .fill(item.isFrontmost ? Color.white.opacity(0.22) : Color.white.opacity(0.08))
+                    .fill(item.isFrontmost ? Color.white.opacity(0.34) : Color.white.opacity(0.18))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 9, style: .continuous)
-                    .stroke(Color.white.opacity(item.isFrontmost ? 0.25 : 0.08), lineWidth: 1)
+                    .stroke(Color.black.opacity(item.isFrontmost ? 0.14 : 0.06), lineWidth: 1)
             )
             .help(item.name)
         }

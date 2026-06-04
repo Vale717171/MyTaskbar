@@ -12,18 +12,22 @@ struct BatteryView: View {
         HStack(spacing: 6) {
             Image(systemName: batteryIconName)
                 .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.white.opacity(0.9))
+                .foregroundStyle(.black.opacity(0.78))
             
             Text("\(batteryLevel)%")
                 .font(.system(size: 11, weight: .medium, design: .rounded))
-                .foregroundStyle(.white.opacity(0.85))
+                .foregroundStyle(.black.opacity(0.74))
                 .monospacedDigit()
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
         .background(
             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .fill(Color.white.opacity(0.08))
+                .fill(Color.white.opacity(0.24))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .stroke(Color.black.opacity(0.08), lineWidth: 1)
         )
         .onAppear(perform: updateBatteryInfo)
         .onReceive(timer) { _ in
