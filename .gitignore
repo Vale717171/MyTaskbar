@@ -1,0 +1,9 @@
+# Xcode
+.DS_Store
+*.xcuserstate
+xcuserdata/
+*.xcodeproj/project.xcworkspace
+*.xcodeproj/xcuserdata
+
+# Swift Package
+.build/
