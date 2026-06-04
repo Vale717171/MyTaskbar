@@ -1,9 +1,14 @@
-# Xcode
-.DS_Store
-*.xcuserstate
+# macOS / Xcode
+generated/
+MyTaskbar.xcodeproj/
+*.xcworkspace/
 xcuserdata/
-*.xcodeproj/project.xcworkspace
-*.xcodeproj/xcuserdata
+.DS_Store
 
-# Swift Package
+# Swift / Build
 .build/
+DerivedData/
+
+# IDE
+.idea/
+.vscode/
