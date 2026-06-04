@@ -1,36 +1,40 @@
 import AppKit
+import SwiftUI
 
-class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate {
     var taskbarWindow: NSWindow?
-    
+
     func applicationDidFinishLaunching(_ notification: Notification) {
+        NSApp.setActivationPolicy(.accessory)
         createTaskbarWindow()
     }
-    
+
     private func createTaskbarWindow() {
         guard let screen = NSScreen.main else { return }
         let screenRect = screen.visibleFrame
-        let height: CGFloat = 44
-        
+        let height: CGFloat = 52
+
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: screenRect.width, height: height),
+            contentRect: NSRect(x: screenRect.minX, y: screenRect.minY, width: screenRect.width, height: height),
             styleMask: [.borderless, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
-        
+
+        window.identifier = NSUserInterfaceItemIdentifier("MyTaskbarWindow")
         window.level = .statusWindow
-        window.backgroundColor = NSColor.black.withAlphaComponent(0.85)
+        window.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary]
+        window.backgroundColor = .clear
         window.isOpaque = false
         window.hasShadow = true
         window.isMovableByWindowBackground = false
-        
-        window.setFrameOrigin(NSPoint(x: 0, y: screenRect.minY))
-        
+        window.ignoresMouseEvents = false
+
         let hostingView = NSHostingView(rootView: TaskbarView())
         window.contentView = hostingView
-        
-        window.makeKeyAndOrderFront(nil)
+        window.setFrameOrigin(NSPoint(x: screenRect.minX, y: screenRect.minY))
+        window.orderFrontRegardless()
+
         taskbarWindow = window
     }
 }
