@@ -2,91 +2,74 @@ import SwiftUI
 import IOKit.ps
 
 struct BatteryView: View {
-    @State private var status = BatteryStatus.current()
+    @State private var batteryLevel: Int = 100
+    @State private var isCharging: Bool = false
+    @State private var isPluggedIn: Bool = false
+    
     private let timer = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
-
+    
     var body: some View {
-        Group {
-            if status.isAvailable {
-                HStack(spacing: 5) {
-                    Image(systemName: status.symbolName)
-                        .font(.system(size: 12, weight: .semibold))
-                    Text("\(status.percentage)%")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
-                        .monospacedDigit()
-                }
-                .foregroundColor(.white)
-                .frame(width: 58, alignment: .trailing)
-                .help(status.helpText)
-            }
+        HStack(spacing: 6) {
+            Image(systemName: batteryIconName)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(.white.opacity(0.9))
+            
+            Text("\(batteryLevel)%")
+                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .foregroundStyle(.white.opacity(0.85))
+                .monospacedDigit()
         }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .fill(Color.white.opacity(0.08))
+        )
+        .onAppear(perform: updateBatteryInfo)
         .onReceive(timer) { _ in
-            status = BatteryStatus.current()
+            updateBatteryInfo()
         }
     }
-}
-
-struct BatteryStatus: Equatable {
-    let percentage: Int
-    let isCharging: Bool
-    let isFullyCharged: Bool
-    let isAvailable: Bool
-
-    var symbolName: String {
-        if isCharging {
-            return "battery.100.bolt"
+    
+    private var batteryIconName: String {
+        if isPluggedIn {
+            return isCharging ? "battery.100.bolt" : "battery.100"
         }
-
-        switch percentage {
-        case 80...100:
-            return "battery.100"
-        case 45..<80:
-            return "battery.75"
-        case 20..<45:
-            return "battery.25"
-        default:
-            return "battery.0"
+        
+        switch batteryLevel {
+        case 0...10:  return "battery.0"
+        case 11...25: return "battery.25"
+        case 26...50: return "battery.50"
+        case 51...75: return "battery.75"
+        default:      return "battery.100"
         }
     }
-
-    var helpText: String {
-        if isCharging {
-            return "Batteria \(percentage)% - in carica"
-        }
-        if isFullyCharged {
-            return "Batteria \(percentage)% - carica"
-        }
-        return "Batteria \(percentage)%"
-    }
-
-    static func current() -> BatteryStatus {
-        guard let snapshot = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
-              let sources = IOPSCopyPowerSourcesList(snapshot)?.takeRetainedValue() as? [CFTypeRef] else {
-            return BatteryStatus(percentage: 0, isCharging: false, isFullyCharged: false, isAvailable: false)
-        }
-
-        for source in sources {
-            guard let description = IOPSGetPowerSourceDescription(snapshot, source)?.takeUnretainedValue() as? [String: Any],
-                  let type = description[kIOPSTypeKey] as? String,
-                  type == kIOPSInternalBatteryType else {
+    
+    private func updateBatteryInfo() {
+        guard let powerSourcesInfo = IOPSCopyPowerSourcesInfo()?.takeRetainedValue() else { return }
+        guard let powerSourcesList = IOPSCopyPowerSourcesList(powerSourcesInfo)?.takeRetainedValue() as? [CFTypeRef] else { return }
+        
+        for powerSource in powerSourcesList {
+            guard let description = IOPSGetPowerSourceDescription(powerSourcesInfo, powerSource)?.takeRetainedValue() as? [String: Any] else { continue }
+            
+            // We only care about the internal battery
+            if let type = description[kIOPSTypeKey] as? String, type != kIOPSInternalBatteryType {
                 continue
             }
-
-            let currentCapacity = description[kIOPSCurrentCapacityKey] as? Int ?? 0
-            let maxCapacity = description[kIOPSMaxCapacityKey] as? Int ?? 100
-            let percentage = maxCapacity > 0 ? Int((Double(currentCapacity) / Double(maxCapacity) * 100).rounded()) : 0
-            let powerState = description[kIOPSPowerSourceStateKey] as? String
-            let isCharging = powerState == kIOPSACPowerValue && percentage < 100
-            let isFullyCharged = (description[kIOPSIsChargedKey] as? Bool) ?? percentage >= 100
-
-            return BatteryStatus(
-                percentage: min(max(percentage, 0), 100),
-                isCharging: isCharging,
-                isFullyCharged: isFullyCharged,
-                isAvailable: true
-            )
+            
+            if let currentCapacity = description[kIOPSCurrentCapacityKey] as? Int,
+               let maxCapacity = description[kIOPSMaxCapacityKey] as? Int,
+               maxCapacity > 0 {
+                batteryLevel = Int((Double(currentCapacity) / Double(maxCapacity)) * 100.0)
+            }
+            
+            if let charging = description[kIOPSIsChargingKey] as? Bool {
+                isCharging = charging
+            }
+            
+            if let powerSourceState = description[kIOPSPowerSourceStateKey] as? String {
+                isPluggedIn = (powerSourceState == kIOPSACPowerValue)
+            }
         }
-
-        return BatteryStatus(percentage: 0, isCharging: false, isFullyCharged: false, isAvailable: false)
     }
 }
