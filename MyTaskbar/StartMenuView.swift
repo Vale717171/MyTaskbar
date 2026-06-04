@@ -26,11 +26,11 @@ struct StartMenuView: View {
             VisualEffectView(material: .hudWindow, blendingMode: .behindWindow, state: .active)
             LinearGradient(
                 colors: [
-                    Color(red: 0.08, green: 0.10, blue: 0.13).opacity(0.94),
-                    Color(red: 0.02, green: 0.03, blue: 0.05).opacity(0.92)
+                    Color(white: 0.80).opacity(0.96),
+                    Color(white: 0.73).opacity(0.94)
                 ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
+                startPoint: .top,
+                endPoint: .bottom
             )
 
             VStack(alignment: .leading, spacing: 16) {
@@ -49,7 +49,7 @@ struct StartMenuView: View {
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(Color.white.opacity(0.22), lineWidth: 1)
+                .stroke(Color.black.opacity(0.22), lineWidth: 1)
         )
     }
 
@@ -58,10 +58,10 @@ struct StartMenuView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text("MyTaskbar")
                     .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(.black.opacity(0.88))
                 Text("Menu Start sperimentale per macOS")
                     .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundColor(.white.opacity(0.65))
+                    .foregroundColor(.black.opacity(0.58))
             }
 
             Spacer()
@@ -69,15 +69,15 @@ struct StartMenuView: View {
             Button(action: { NSApp.terminate(nil) }) {
                 Image(systemName: "power")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.88))
+                    .foregroundColor(.black.opacity(0.78))
                     .frame(width: 30, height: 30)
                     .background(
                         Circle()
-                            .fill(Color.white.opacity(0.12))
+                            .fill(Color.black.opacity(0.08))
                     )
                     .overlay(
                         Circle()
-                            .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                            .stroke(Color.black.opacity(0.12), lineWidth: 1)
                     )
             }
             .buttonStyle(.plain)
@@ -90,21 +90,21 @@ struct StartMenuView: View {
     private var searchField: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.white.opacity(0.65))
+                .foregroundColor(.black.opacity(0.50))
             TextField("Cerca applicazioni", text: $searchText)
                 .textFieldStyle(.plain)
-                .foregroundColor(.white)
-                .tint(.white)
+                .foregroundColor(.black.opacity(0.88))
+                .tint(.black)
         }
         .padding(.horizontal, 12)
         .frame(height: 38)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color.black.opacity(0.28))
+                .fill(Color.white.opacity(0.34))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(Color.white.opacity(0.20), lineWidth: 1)
+                .stroke(Color.black.opacity(0.10), lineWidth: 1)
         )
     }
 
@@ -112,7 +112,7 @@ struct StartMenuView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Aggiunte alla taskbar")
                 .font(.system(size: 13, weight: .semibold, design: .rounded))
-                .foregroundColor(.white.opacity(0.75))
+                .foregroundColor(.black.opacity(0.66))
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 5), spacing: 8) {
                 ForEach(pinnedApps) { app in
@@ -127,11 +127,11 @@ struct StartMenuView: View {
             HStack {
                 Text(searchText.isEmpty ? "Tutte le app" : "Risultati")
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundColor(.white.opacity(0.75))
+                    .foregroundColor(.black.opacity(0.66))
                 Spacer()
                 Text("\(filteredApps.count)")
                     .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundColor(.white.opacity(0.45))
+                    .foregroundColor(.black.opacity(0.46))
             }
 
             ScrollView {
@@ -162,14 +162,18 @@ private struct StartPinnedAppButton: View {
 
                 Text(app.name)
                     .font(.system(size: 11, weight: .medium, design: .rounded))
-                    .foregroundColor(.white.opacity(0.95))
+                    .foregroundColor(.black.opacity(0.82))
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity)
             .frame(height: 76)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color.white.opacity(0.12))
+                    .fill(Color.white.opacity(0.26))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -192,21 +196,25 @@ private struct StartMenuRow: View {
 
                 Text(app.name)
                     .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundColor(.white.opacity(0.95))
+                    .foregroundColor(.black.opacity(0.84))
 
                 Spacer()
 
                 if viewModel.isPinned(app) {
                     Image(systemName: "pin.fill")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundColor(.white.opacity(0.55))
+                        .foregroundColor(.black.opacity(0.44))
                 }
             }
             .padding(.horizontal, 10)
             .frame(height: 40)
             .background(
                 RoundedRectangle(cornerRadius: 9, style: .continuous)
-                    .fill(Color.white.opacity(0.10))
+                    .fill(Color.white.opacity(0.22))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 9, style: .continuous)
+                    .stroke(Color.black.opacity(0.06), lineWidth: 1)
             )
             .contentShape(Rectangle())
         }
