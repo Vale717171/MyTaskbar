@@ -2,7 +2,7 @@
 
 **Taskbar personalizzata per macOS** costruita con SwiftUI + AppKit.
 
-L'obiettivo è sperimentare una barra in stile Windows per macOS: Start menu, app aperte, app fissate, blur, orologio e comportamento always-on-top.
+L'obiettivo è sperimentare una barra in stile Windows per macOS: Start menu, app aperte, app fissate, blur, orologio, batteria e comportamento always-on-top.
 
 ### Requisiti
 - macOS 14.0 Sonoma o superiore
@@ -40,6 +40,7 @@ MyTaskbar/
     ├── AppInfo.swift
     ├── VisualEffectView.swift
     ├── ClockView.swift
+    ├── BatteryView.swift     ← nuovo
     └── Info.plist
 ```
 
@@ -55,7 +56,8 @@ MyTaskbar/
 - App fissate in stile Windows.
 - Menu contestuale per aggiungere/rimuovere app dalla taskbar.
 - Indicatore sotto le app aperte e app attiva.
-- Orologio e data sul lato destro.
+- **Orologio e data** sul lato destro.
+- **BatteryView**: percentuale batteria + icona (carica/collegata) usando IOKit.ps. Aggiorna ogni 30 secondi.
 
 ### Note tecniche
 

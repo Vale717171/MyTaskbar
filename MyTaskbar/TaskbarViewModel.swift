@@ -1,6 +1,11 @@
 import SwiftUI
 import AppKit
 
+private final class StartMenuPanel: NSPanel {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { true }
+}
+
 @MainActor
 final class TaskbarViewModel: ObservableObject {
     @Published var runningApplications: [NSRunningApplication] = []
@@ -59,7 +64,7 @@ final class TaskbarViewModel: ObservableObject {
 
     func bringItemToFrontOrLaunch(_ item: TaskbarItem) {
         if let app = item.runningApplication {
-            app.activate(options: .activateIgnoringOtherApps)
+            activateOrReopen(app, fallbackURL: item.applicationURL)
             return
         }
 
@@ -69,7 +74,7 @@ final class TaskbarViewModel: ObservableObject {
     }
 
     func bringAppToFront(_ app: NSRunningApplication) {
-        app.activate(options: .activateIgnoringOtherApps)
+        activateOrReopen(app, fallbackURL: app.bundleURL)
     }
 
     func openApplication(at url: URL) {
@@ -179,17 +184,46 @@ final class TaskbarViewModel: ObservableObject {
         UserDefaults.standard.set(pinnedApplicationIDs, forKey: pinnedDefaultsKey)
     }
 
+    private func activateOrReopen(_ app: NSRunningApplication, fallbackURL: URL?) {
+        app.unhide()
+        app.activate(options: [])
+
+        if let bundleIdentifier = app.bundleIdentifier {
+            runOpen(arguments: ["-b", bundleIdentifier])
+            return
+        }
+
+        if let fallbackURL {
+            runOpen(arguments: ["-a", fallbackURL.path])
+        }
+    }
+
+    private func runOpen(arguments: [String]) {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+        process.arguments = arguments
+        process.standardOutput = Pipe()
+        process.standardError = Pipe()
+
+        do {
+            try process.run()
+        } catch {
+            print("Failed to run open \(arguments.joined(separator: " ")): \(error.localizedDescription)")
+        }
+    }
+
     private func showStartMenu() {
         guard let taskbarWindow = NSApp.windows.first(where: { $0.identifier?.rawValue == "MyTaskbarWindow" }) ?? NSApp.windows.first else { return }
 
-        let panel = NSPanel(
+        let panel = StartMenuPanel(
             contentRect: NSRect(x: 0, y: 0, width: 520, height: 620),
-            styleMask: [.borderless, .fullSizeContentView, .nonactivatingPanel],
+            styleMask: [.borderless, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
 
         panel.level = .popUpMenu
+        panel.isFloatingPanel = true
         panel.backgroundColor = .clear
         panel.isOpaque = false
         panel.hasShadow = true
@@ -204,6 +238,7 @@ final class TaskbarViewModel: ObservableObject {
         let panelY = taskbarWindow.frame.maxY + 8
 
         panel.setFrameOrigin(NSPoint(x: panelX, y: panelY))
+        NSApp.activate(ignoringOtherApps: true)
         panel.makeKeyAndOrderFront(nil)
         startPanel = panel
     }
