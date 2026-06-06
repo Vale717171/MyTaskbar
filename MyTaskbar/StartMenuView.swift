@@ -4,6 +4,7 @@ import AppKit
 struct StartMenuView: View {
     @ObservedObject var viewModel: TaskbarViewModel
     @State private var searchText = ""
+    @FocusState private var isSearchFieldFocused: Bool
 
     private var filteredApps: [AppInfo] {
         if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -51,6 +52,11 @@ struct StartMenuView: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .stroke(Color.black.opacity(0.22), lineWidth: 1)
         )
+        .onAppear {
+            DispatchQueue.main.async {
+                isSearchFieldFocused = true
+            }
+        }
     }
 
     private var header: some View {
@@ -95,6 +101,7 @@ struct StartMenuView: View {
                 .textFieldStyle(.plain)
                 .foregroundColor(.black.opacity(0.88))
                 .tint(.black)
+                .focused($isSearchFieldFocused)
         }
         .padding(.horizontal, 12)
         .frame(height: 38)

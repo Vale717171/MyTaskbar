@@ -1,6 +1,11 @@
 import SwiftUI
 import AppKit
 
+private final class StartMenuPanel: NSPanel {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { true }
+}
+
 @MainActor
 final class TaskbarViewModel: ObservableObject {
     @Published var runningApplications: [NSRunningApplication] = []
@@ -210,14 +215,15 @@ final class TaskbarViewModel: ObservableObject {
     private func showStartMenu() {
         guard let taskbarWindow = NSApp.windows.first(where: { $0.identifier?.rawValue == "MyTaskbarWindow" }) ?? NSApp.windows.first else { return }
 
-        let panel = NSPanel(
+        let panel = StartMenuPanel(
             contentRect: NSRect(x: 0, y: 0, width: 520, height: 620),
-            styleMask: [.borderless, .fullSizeContentView, .nonactivatingPanel],
+            styleMask: [.borderless, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
 
         panel.level = .popUpMenu
+        panel.isFloatingPanel = true
         panel.backgroundColor = .clear
         panel.isOpaque = false
         panel.hasShadow = true
@@ -232,6 +238,7 @@ final class TaskbarViewModel: ObservableObject {
         let panelY = taskbarWindow.frame.maxY + 8
 
         panel.setFrameOrigin(NSPoint(x: panelX, y: panelY))
+        NSApp.activate(ignoringOtherApps: true)
         panel.makeKeyAndOrderFront(nil)
         startPanel = panel
     }
